@@ -86,7 +86,7 @@ def calculate_metrics(pipeline, features, target):
     predictions = pipeline.predict(features)
     classes = pipeline.named_steps["classifier"].classes_
     classifier = pipeline.named_steps["classifier"]
-    if hasattr(classifier, "predict_proba"):
+    if not hasattr(classifier, "probability") or classifier.probability:
         probabilities = pipeline.predict_proba(features)
         positive_index = list(classes).index("yes")
         positive_scores = probabilities[:, positive_index]
