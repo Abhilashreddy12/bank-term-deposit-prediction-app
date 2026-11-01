@@ -55,7 +55,7 @@ if uploaded_file is None:
 
 data = pd.read_csv(uploaded_file, sep=DATA_SEPARATOR)
 st.subheader("Uploaded data")
-st.dataframe(data.head(10), use_container_width=True)
+st.dataframe(data.head(10), width="stretch")
 
 if TARGET_COLUMN not in data.columns:
     st.error(f"The uploaded file must contain the target column '{TARGET_COLUMN}'.")
@@ -84,10 +84,16 @@ selected_model = st.selectbox(
 )
 
 
-def evaluate_model(model_name):
-    pipeline = joblib.load(MODEL_DIR / f"{model_name}.joblib")
-    features = data.drop(columns=TARGET_COLUMN)
-    target = data[TARGET_COLUMN]
+@st.cache_resource
+def load_model(model_name):
+    return joblib.load(MODEL_DIR / f"{model_name}.joblib")
+
+
+@st.cache_data(show_spinner=False)
+def evaluate_model(model_name, evaluation_data):
+    pipeline = load_model(model_name)
+    features = evaluation_data.drop(columns=TARGET_COLUMN)
+    target = evaluation_data[TARGET_COLUMN]
     predictions = pipeline.predict(features)
     classes = pipeline.named_steps["classifier"].classes_
     classifier = pipeline.named_steps["classifier"]
@@ -110,18 +116,19 @@ def evaluate_model(model_name):
 
 
 results = {}
-for model_name in available_models:
-    try:
-        results[model_name] = evaluate_model(model_name)
-    except Exception as error:
-        st.error(f"Could not evaluate {model_name}: {error}")
-        st.stop()
+with st.spinner("Evaluating the five saved models. This may take a moment..."):
+    for model_name in available_models:
+        try:
+            results[model_name] = evaluate_model(model_name, data)
+        except Exception as error:
+            st.error(f"Could not evaluate {model_name}: {error}")
+            st.stop()
 
 st.subheader("Model comparison")
 comparison = pd.DataFrame(
     {model_name: result[2] for model_name, result in results.items()}
 ).T
-st.dataframe(comparison.style.format("{:.4f}"), use_container_width=True)
+st.dataframe(comparison.style.format("{:.4f}"), width="stretch")
 
 target, predictions, selected_metrics = results[selected_model]
 st.subheader(f"Detailed results: {selected_model}")
@@ -143,7 +150,7 @@ sns.heatmap(
 )
 axis.set_xlabel("Predicted label")
 axis.set_ylabel("True label")
-st.pyplot(figure)
+st.pyplot(figure, width="stretch")
 plt.close(figure)
 
 st.subheader("Classification report")
@@ -155,4 +162,4 @@ report = classification_report(
     output_dict=True,
     zero_division=0,
 )
-st.dataframe(pd.DataFrame(report).T.style.format("{:.4f}"), use_container_width=True)
+st.dataframe(pd.DataFrame(report).T.style.format("{:.4f}"), width="stretch")
