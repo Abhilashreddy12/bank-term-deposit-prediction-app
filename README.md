@@ -38,6 +38,21 @@ The training script calculates accuracy, AUC, precision, recall, F1 score, and
 Matthews correlation coefficient (MCC). It writes final test results to
 `metrics.csv` and validation results to `validation_metrics.csv`.
 
+## Evaluation protocol
+
+The held-out `test_data.csv` is never used while fitting or selecting the
+models. The training file is split into stratified training and validation
+sets. The validation results in `validation_metrics.csv` support development
+comparison, while the final pipelines are refitted on all training rows and
+evaluated once on `test_data.csv`. The final results in `metrics.csv` are the
+values reported in the comparison table below and used by the Streamlit app.
+
+Because the target is imbalanced, accuracy is interpreted together with AUC,
+minority-class precision, minority-class recall, F1, MCC, and the confusion
+matrix. Logistic Regression is selected as the overall winner because it has
+the strongest AUC and F1 combination; the SVM is a reasonable alternative when
+recall is the primary objective.
+
 | ML Model Name | Accuracy | AUC | Precision | Recall | F1 | MCC |
 |---|---:|---:|---:|---:|---:|---:|
 | Logistic Regression | 0.8641 | 0.9402 | 0.4492 | 0.9095 | 0.6014 | 0.5786 |
