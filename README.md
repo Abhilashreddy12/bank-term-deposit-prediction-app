@@ -118,6 +118,23 @@ all five models, including accuracy, AUC, precision, recall, F1, MCC, a
 confusion matrix, and a classification report. The app never retrains on
 uploaded data.
 
+## Streamlit Community Cloud deployment
+
+1. Push the repository to GitHub with `app.py`, `requirements.txt`, `model/`,
+	and `test_data.csv` committed.
+2. Open [Streamlit Community Cloud](https://streamlit.io/cloud) and sign in
+	with the GitHub account that owns this repository.
+3. Select **New app**, choose this repository, select the `main` branch, and
+	set the entrypoint to `app.py`.
+4. Deploy the application and wait for dependency installation to finish.
+5. Open the deployed URL, upload `test_data.csv`, select each model, and verify
+	the comparison table, metrics, confusion matrix, and classification report.
+
+The deployed app loads the saved `.joblib` pipelines from `model/`. It does not
+need the training CSV and never retrains on uploaded data. Do not add secrets
+to the repository; use Streamlit Cloud secrets only if a future feature needs
+them.
+
 ## Streamlit Community Cloud link
 
 Add the deployed Streamlit URL here before submission.
