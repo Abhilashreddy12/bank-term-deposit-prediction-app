@@ -18,6 +18,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
     roc_curve,
+    make_scorer,
 )
 from sklearn.inspection import permutation_importance
 
@@ -197,7 +198,15 @@ def feature_importance(model_name, evaluation_data, target):
         sample_features = sample.drop(columns=TARGET_COLUMN)
         sample_target = sample[TARGET_COLUMN]
         permutation = permutation_importance(
-            pipeline, sample_features, sample_target, scoring="f1", n_repeats=3,
+            pipeline,
+            sample_features,
+            sample_target,
+            scoring=make_scorer(
+                f1_score,
+                pos_label=POSITIVE_LABEL,
+                zero_division=0,
+            ),
+            n_repeats=3,
             random_state=42, n_jobs=1,
         )
         frame = pd.DataFrame({"Feature": REQUIRED_FEATURES, "Importance": permutation.importances_mean})
